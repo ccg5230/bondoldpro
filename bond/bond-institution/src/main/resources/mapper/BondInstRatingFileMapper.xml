@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondInstRatingFileMapper">
+
+	<insert id="insertBondInstRatingFile" parameterType="bondInstRatingFile">
+		insert into
+		institution.t_bond_inst_rating_file
+		(type,file_path,file_name,oss_key,inst_rating_id,create_by,update_by)
+		values(#{type},#{filePath},#{fileName},#{ossKey},#{instRatingId},#{createBy},#{updateBy})
+	</insert>
+
+	<delete id="deleteBondInstRatingFileByOssKey">
+		delete from institution.t_bond_inst_rating_file where
+		oss_key = #{ossKey}
+	</delete>
+
+	<select id="queryBondInstRatingFileList" parameterType="bondInstRatingFile"
+		resultType="bondInstRatingFile">
+		SELECT
+		TYPE,file_path as filePath,file_name as
+		fileName,oss_key as ossKey,STATUS,create_by as createBy,create_time as
+		createTime,update_by as updateBy,update_time as updateTime,inst_rating_id as instRatingId
+		FROM
+		institution.t_bond_inst_rating_file
+		WHERE STATUS = 1
+		<if test="type!=null">
+			AND TYPE = #{type} 
+		</if>
+		AND inst_rating_id = #{instRatingId}
+	</select>
+
+	<delete id="deleteBondInstRatingFileByHistId" parameterType="Long">
+		delete from institution.t_bond_inst_rating_file 
+		WHERE STATUS = 1
+		AND  inst_rating_id = #{instRatingId}
+	</delete>
+
+</mapper>

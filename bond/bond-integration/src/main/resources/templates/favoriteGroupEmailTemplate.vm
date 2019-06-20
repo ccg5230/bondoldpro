@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="content-type" content="text/html; charset=UTF-8">
+<style type="text/css">
+	body, html, input {
+		font-family:"微软雅黑";
+	}
+</style>
+</head>
+<body style="margin:0;padding:0">
+	#foreach($group in ${root.entrySet()})
+ 	<table>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td>${group.value.get("shortName")}&nbsp;&nbsp;</td>
+			<td><font color="#646464">${group.value.get("code")}</font>&nbsp;&nbsp;</td>
+			<td><font color="#646464">${group.value.get("tenorDays")}D&nbsp;&nbsp;</font></td>
+			<td><font color="#646464">${group.value.get("issuer")}</font></td>
+		</tr>
+		#foreach($msgMap in ${group.value.get("msgMap").entrySet()})
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="4">
+				<font color="#646464">${msgMap.value.get("creatTimeStr")}&nbsp;&nbsp;${msgMap.value.get("className")}&nbsp;&nbsp;
+				#if(${msgMap.value.get("skipUrl")})
+				<a style="color:#4169E1" href="${msgMap.value.get("skipUrl")}" target="_blank">${msgMap.value.get("content")}</a>
+				#else
+				${msgMap.value.get("content")}
+				#end
+                </font>
+			</td>
+		</tr>
+		#end
+	</table>
+	</br>
+	#end
+	<hr/>
+	<table>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2"><font color="#969696">感谢订阅DM债券投组的变动提醒，如需退订，请到DM客户端-投资组合设置里关闭邮件订阅。</font></td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2"><font color="#969696">DM债券专线：021-61490342</font></td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2">
+				<font color="#969696">DM网页版：</font>
+				<a style="color:#969696" href="http://www.innodealing.com/" target="_blank">http://www.innodealing.com/</a>
+			</td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2"><font color="#969696">关注我们：</font></td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2">
+				<img src="http://web.innodealing.com/img/dm-wechat-qrcode.jpg"/>
+				<img src="http://web.innodealing.com/img/dm-bond-qrcode.jpg"/>
+			</td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2"><font color="#969696">APP：</font></td>
+		</tr>
+		<tr>
+			<td width="100px">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+			<td colspan="2">
+				<img src="http://web.innodealing.com/img/dm-app-qrcode.jpg"/>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

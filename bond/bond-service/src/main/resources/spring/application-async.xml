@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd"
+	default-autowire="byName">
+
+	<bean name="saveBondNotificationMsgConsumer" class="com.innodealing.bond.async.SaveBondNotificationMsgQueue"/>
+	<bean name="saveBondNotificationMsgQueue" class="java.lang.Thread" init-method="start">
+		<constructor-arg ref="saveBondNotificationMsgConsumer"/>
+	</bean>
+
+	<bean name="saveBondNotificationMsgDocConsumer" class="com.innodealing.bond.async.SaveBondNotificationMsgDocQueue"/>
+	<bean name="saveBondNotificationMsgDocQueue" class="java.lang.Thread" init-method="start">
+		<constructor-arg ref="saveBondNotificationMsgDocConsumer"/>
+	</bean>
+
+</beans>

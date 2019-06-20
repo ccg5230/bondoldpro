@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${DM_LOG_HOME}/bond-data-canal/bond-data-canal-access.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${DM_LOG_HOME}/bond-data-canal/bond-data-canal-%d{yyyy-MM-dd}-access.log
+			</fileNamePattern>
+			<maxHistory>3</maxHistory>
+			<totalSizeCap>5GB</totalSizeCap>
+		</rollingPolicy>
+		<encoder>
+			<Pattern>combined</Pattern>
+			<Pattern>%h %l %u [%t] "%r" %s %b %fullRequest%n%n%fullResponse
+			</Pattern>
+			<charset>utf8</charset>
+		</encoder>
+	</appender>
+	<appender-ref ref="FILE" />
+</configuration>

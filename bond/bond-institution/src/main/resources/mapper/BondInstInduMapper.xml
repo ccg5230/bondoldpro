@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondInstInduMapper">
+
+	<select id="queryBondInstInduList" resultType="bondInstIndu"
+		parameterType="map">
+		SELECT
+		indu.indu_uni_code AS induUniCode,indu.indu_class_name
+		AS
+		induClassName,indu.inst_id AS instId,indu.create_by AS createBy,indu.indu_level AS
+		induLevel,indu.fat_uni_code AS fatUniCode,indu.indu_class_desc AS induClassDesc
+		,(SELECT COUNT(1) FROM institution.t_bond_inst_com_indu comindu WHERE
+		comindu.indu_uni_code = indu.indu_uni_code AND
+		comindu.inst_id=#{instId}) AS COUNT, IFNULL(qq.indu_level,indu.indu_level),qq.indu_class_name as fatClassName
+		FROM
+		institution.t_bond_inst_indu
+		indu 
+		LEFT JOIN institution.t_bond_inst_indu qq ON indu.fat_uni_code = qq.indu_uni_code
+		WHERE indu.is_valid = 1
+		AND indu.inst_id = #{instId}
+		<if test="induClassName!=null and induClassName!=''">
+			AND ( indu.indu_class_name LIKE '%' #{induClassName} '%'
+		OR 
+			indu.indu_uni_code in (
+				SELECT fat_uni_code FROM institution.t_bond_inst_indu WHERE indu_class_name LIKE '%' #{induClassName} '%' 
+			)
+		OR    indu.fat_uni_code in (
+				SELECT indu_uni_code FROM institution.t_bond_inst_indu WHERE indu_class_name LIKE '%' #{induClassName} '%' 
+			)
+		)
+		</if>
+		<if test="uniCode!=null and uniCode!=''">
+			and indu.indu_uni_code = #{uniCode}
+		</if>
+		order by IFNULL(qq.indu_level,indu.indu_level),indu.fat_uni_code,indu.indu_level
+	</select>
+
+	<insert id="insertBondInstIndu" parameterType="bondInstIndu" useGeneratedKeys="true" keyProperty="induUniCode">
+		insert into
+		institution.t_bond_inst_indu
+		(indu_uni_code,indu_class_name,inst_id,create_by,update_by,indu_level,fat_uni_code)
+		values(#{induUniCode},#{induClassName},#{instId},#{createBy},#{updateBy},#{induLevel},#{fatUniCode})
+	</insert>
+
+	<update id="updateBondInstIndu" parameterType="bondInstIndu">
+		update institution.t_bond_inst_indu set
+		indu_class_name =
+		#{induClassName}
+		<if test="updateBy!=null">
+			,update_by = #{updateBy}
+		</if>
+		<if test="induLevel!=null">
+			,indu_level = #{induLevel}
+		</if>
+		<if test="fatUniCode!=null">
+			,fat_uni_code = #{fatUniCode}
+		</if>
+		where inst_id = #{instId} and indu_uni_code = #{induUniCode}
+	</update>
+
+	<delete id="deleteBondInstIndu" parameterType="map">
+		delete from
+		institution.t_bond_inst_indu where
+		inst_id = #{instId}
+		and (indu_uni_code in
+		<foreach collection="induUniCodeList" index="index" item="induUniCode"
+			open="(" separator="," close=")">
+			#{induUniCode}
+		</foreach>
+		or fat_uni_code in
+		<foreach collection="induUniCodeList" index="index" item="induUniCode"
+			open="(" separator="," close=")">
+			#{induUniCode}
+		</foreach>
+		)
+	</delete>
+
+	<!-- 当前节点是否包含子节点 , 当前父节点是否包含子节点并且当前父节点包含发行人 -->
+	<select id="queryInduCount" resultType="Integer" parameterType="map">
+		SELECT COUNT(1) FROM institution.t_bond_inst_indu WHERE fat_uni_code =
+		#{uniCode} and inst_id = #{instId}
+	</select>
+
+	<update id="updateOldBondInstIndu" parameterType="bondInstIndu">
+		update
+		institution.t_bond_inst_indu set
+		indu_level = indu_level-1
+		where inst_id
+		= #{instId} and fat_uni_code = #{oldFatUniCode} and indu_level >=
+		#{oldInduLevel}
+	</update>
+
+	<update id="updateNewBondInstIndu" parameterType="bondInstIndu">
+		update
+		institution.t_bond_inst_indu set
+		indu_level = indu_level+1
+		where inst_id
+		= #{instId} and fat_uni_code = #{fatUniCode} and indu_level >=
+		#{induLevel}
+	</update>
+	
+	<update id="updateBondInstInduLevel" parameterType="bondInstIndu">
+		update
+		institution.t_bond_inst_indu set
+		indu_level = indu_level+1
+		where inst_id
+		= #{instId} and fat_uni_code = #{fatUniCode}
+	</update>
+	
+
+
+</mapper>

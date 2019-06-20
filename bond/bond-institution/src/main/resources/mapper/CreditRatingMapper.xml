@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondCreditRatingMapper">
+
+	<sql id='TABLE_NAME'>institution.T_BOND_CREDIT_RATING</sql>
+
+	<sql id="TABLE_COLUMN">
+		ID,GROUP_ID,BOND_UNI_CODE,BOND_CODE,BOND_SHORTNAME,ISSUER_ID,USER_ID,ORG_ID,CREATE_TIME,INSTRATING_ID,INSTINVADV_ID
+	</sql>
+
+	<resultMap id="baseResultMap" type="com.innodealing.model.mysql.BondCreditRating">
+		<id column="ID" property="id" />
+		<result column="GROUP_ID" property="groupId" />
+		<result column="BOND_UNI_CODE" property="bondUniCode" />
+		<result column="BOND_CODE" property="bondCode" />
+		<result column="BOND_SHORTNAME" property="bondShortname" />
+		<result column="ISSUER_ID" property="issuerId" />
+		<result column="USER_ID" property="userId" />
+		<result column="ORG_ID" property="orgId" />
+		<result column="CREATE_TIME" property="createTime" />
+		<result column="INSTRATING_ID" property="instratingId" />
+		<result column="INSTINVADV_ID" property="instinvadvId" />
+	</resultMap>
+
+	<resultMap id="issuerResultMap" type="com.innodealing.model.vo.CreditRatingIssuerVo">
+		<result column="ISSUER_ID" property="issuerId" />
+		<result column="COM_CHI_NAME" property="issuerName" />
+		<result column="INDU_UNI_NAME" property="induName" />
+		<result column="CURRENTRATING" property="currentRating" />
+	</resultMap>
+	
+	<resultMap id="bondResultMap" type="com.innodealing.model.vo.CreditRatingBondVo">
+		<result column="BOND_UNI_CODE" property="bondId" />
+		<result column="BOND_SHORTNAME" property="bondName" />
+		<result column="BOND_CODE" property="bondCode" />
+		<result column="COM_CHI_NAME" property="issuer" />
+		<result column="INDU_UNI_NAME" property="induName" />
+		<result column="ISSUER_ID" property="issuerId" />
+		<result column="CURRENTRATING" property="currentRating" />
+		<result column="INVESTMENTADVICE" property="investmentAdvice" />
+	</resultMap>
+	
+	<resultMap id="baseIssuerGroupInfoMap" type="com.innodealing.model.vo.IssuerGroupInfoVo">
+		<result column="issuerId" property="issuerId" />
+		<result column="groupId" property="groupId" />
+		<result column="groupName" property="groupName" />
+		<result column="groupType" property="groupType" />
+	</resultMap>
+
+	<select id="queryIssuercountByGroupId" resultType="java.lang.Integer"
+		parameterType="java.util.Map">
+		SELECT COUNT(1) FROM (SELECT COUNT(1) FROM 
+		<include refid="TABLE_NAME" />
+		WHERE ISSUER_ID > 0 
+		<if test="groupType > 0">
+			AND GROUP_ID=#{groupId}
+		</if>
+		AND ORG_ID=#{orgId} GROUP BY ISSUER_ID) t;
+	</select>
+
+	<select id="queryBondcountByGroupId" resultType="java.lang.Integer"
+		parameterType="java.util.Map">
+		SELECT COUNT(1) FROM
+		<include refid="TABLE_NAME" />
+		WHERE BOND_UNI_CODE > 0 
+		<if test="groupType > 0">
+			AND GROUP_ID=#{groupId} 
+		</if>
+		AND ORG_ID=#{orgId}
+	</select>
+
+	<select id="queryByGroupIdAndIssuerId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE GROUP_ID=#{groupId} AND ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</select>
+
+	<select id="queryByGroupIdAndBondId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE GROUP_ID=#{groupId} AND BOND_UNI_CODE=#{bondUniCode} AND ORG_ID=#{orgId}
+	</select>
+	
+	<select id="queryGroupIdByOrgIdAndIssuerId" resultType="java.lang.Long"
+		parameterType="java.util.Map">
+		SELECT IFNULL(GROUP_ID,0)
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE GROUP_ID > 0 AND ORG_ID=#{orgId} AND ISSUER_ID=#{issuerId} GROUP BY ISSUER_ID LIMIT 1
+	</select>
+	
+	<select id="queryByUserIdAndBondId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE USER_ID=#{userId} AND BOND_UNI_CODE=#{bondUniCode} AND ORG_ID=#{orgId}
+	</select>
+
+	<insert id="save" parameterType="BondCreditRating">
+		INSERT INTO
+		<include refid="TABLE_NAME" />
+		(GROUP_ID,BOND_UNI_CODE,BOND_CODE,BOND_SHORTNAME,ISSUER_ID,USER_ID,ORG_ID,CREATE_TIME,INSTRATING_ID,INSTINVADV_ID)
+		VALUES
+		(#{groupId},#{bondUniCode},#{bondCode},#{bondShortname},#{issuerId},#{userId},#{orgId},#{createTime},#{instratingId},#{instinvadvId})
+	</insert>
+
+	<select id="queryIssuers" resultMap="issuerResultMap"
+		parameterType="java.util.Map">
+		SELECT t.ISSUER_ID,
+		d.COM_CHI_NAME,
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				d.INDU_UNI_NAME,
+			</when>
+			<when test="induClass != null and induClass == 1">  
+				d.indu_uni_name AS INDU_UNI_NAME,
+			</when>
+			<otherwise>
+			 	d.indu_uni_name_sw AS INDU_UNI_NAME,
+			</otherwise>
+		</choose>
+		b.name AS CURRENTRATING
+		FROM
+		<include refid="TABLE_NAME" /> t
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				LEFT JOIN institution.t_bond_inst_com_indu d ON t.issuer_id = d.com_uni_code AND t.org_id=d.inst_id
+            </when>
+            <otherwise>
+            	LEFT JOIN dmdb.t_bond_com_ext d ON t.issuer_id = d.com_uni_code
+            </otherwise>
+		</choose>
+		LEFT JOIN institution.t_bond_inst_code b ON t.instrating_id=b.id
+		WHERE 1=1
+		AND t.org_id = #{orgId}
+		<if test="induId != null">
+			<choose>
+		    	<when test="induClass != null and induClass == 3">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<when test="induClass != null and induClass == 1">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<otherwise>
+					AND d.indu_uni_code_sw = #{induId}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="ratingId != null">
+			AND t.instrating_id = #{ratingId}
+		</if>
+		<choose>
+		    <when test="groupedFlag != null">
+		    	<if test="groupedFlag == 0">
+			       	AND t.group_id = #{groupId}
+		    	</if>
+		    </when>
+		    <otherwise>
+				AND t.group_id = #{groupId}
+		    </otherwise>
+		</choose>
+		<if test="issuerIds != null">
+			AND t.issuer_id IN
+			<foreach item="item" index="index" collection="issuerIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY t.issuer_id ORDER BY t.create_time DESC
+		<if test="pageIndex != null and  pageSize != null">
+			LIMIT #{pageIndex},#{pageSize}
+		</if>
+	</select>
+	
+	<select id="queryIssuersCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+		SELECT COUNT(1) FROM (
+		SELECT t.ID FROM
+		<include refid="TABLE_NAME" /> t
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				LEFT JOIN institution.t_bond_inst_com_indu d ON t.issuer_id = d.com_uni_code AND t.org_id=d.inst_id
+            </when>
+            <otherwise>
+            	LEFT JOIN dmdb.t_bond_com_ext d ON t.issuer_id = d.com_uni_code
+            </otherwise>
+		</choose>		
+		LEFT JOIN institution.t_bond_inst_code b ON t.instrating_id=b.id
+		WHERE 1=1
+		AND t.org_id = #{orgId}
+		<if test="induId != null">
+			<choose>
+		    	<when test="induClass != null and induClass == 3">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<when test="induClass != null and induClass == 1">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<otherwise>
+					AND d.indu_uni_code_sw = #{induId}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="ratingId != null">
+			AND t.instrating_id = #{ratingId}
+		</if>
+		<choose>
+		    <when test="groupedFlag != null">
+		    	<if test="groupedFlag == 0">
+			       	AND t.group_id = #{groupId}
+		    	</if>
+		    </when>
+		    <otherwise>
+				AND t.group_id = #{groupId}
+		    </otherwise>
+		</choose>
+		<if test="issuerIds != null">
+			AND t.issuer_id IN
+			<foreach item="item" index="index" collection="issuerIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+		GROUP BY t.issuer_id ) a
+	</select>
+
+	<select id="queryBonds" resultMap="bondResultMap" parameterType="java.util.Map">
+		SELECT t.BOND_CODE,
+		t.BOND_SHORTNAME,
+		t.BOND_UNI_CODE,
+		d.COM_CHI_NAME,
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				d.INDU_UNI_NAME,
+			</when>
+			<when test="induClass != null and induClass == 1">  
+				d.indu_uni_name AS INDU_UNI_NAME,
+			</when>
+			<otherwise>
+			 	d.indu_uni_name_sw AS INDU_UNI_NAME,
+			</otherwise>
+		</choose>
+		t.ISSUER_ID,
+		b.name AS CURRENTRATING,
+		a.name AS INVESTMENTADVICE
+		FROM
+		<include refid="TABLE_NAME" /> t
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				LEFT JOIN institution.t_bond_inst_com_indu d ON t.issuer_id = d.com_uni_code AND t.org_id=d.inst_id
+            </when>
+            <otherwise>
+            	LEFT JOIN dmdb.t_bond_com_ext d ON t.issuer_id = d.com_uni_code
+            </otherwise>
+		</choose>
+		LEFT JOIN institution.t_bond_inst_code a ON t.instinvadv_id=a.id
+		LEFT JOIN institution.t_bond_inst_code b ON t.instrating_id=b.id
+		WHERE 1=1
+		AND t.org_id = #{orgId} AND t.bond_uni_code > 0
+		<if test="induId != null">
+			<choose>
+		    	<when test="induClass != null and induClass == 3">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<when test="induClass != null and induClass == 1">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<otherwise>
+					AND d.indu_uni_code_sw = #{induId}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="ratingId != null">
+			AND t.instrating_id = #{ratingId}
+		</if>
+		<if test="adviceId != null">
+			AND t.instinvadv_id = #{adviceId}
+		</if>
+		<if test="groupId != null">
+			AND t.group_id = #{groupId}
+		</if>
+		<if test="queryKeyws != null">
+			AND (t.bond_code LIKE '%${queryKeyws}%' OR t.bond_shortname LIKE '%${queryKeyws}%' 
+			<if test="queryKeyIssuerIds != null">
+				OR t.issuer_id IN
+				<foreach item="issuerId" index="index" collection="queryKeyIssuerIds"
+				open="(" separator="," close=")">
+				#{issuerId}
+			</foreach>
+			</if>
+			)
+		</if>
+		ORDER BY t.create_time DESC
+		<if test="pageIndex != null and  pageSize != null">
+			LIMIT #{pageIndex},#{pageSize}
+		</if>
+	</select>
+	
+	<select id="queryBondsCount" resultType="java.lang.Integer" parameterType="java.util.Map">
+		SELECT COUNT(1) FROM
+		<include refid="TABLE_NAME" /> t
+		<choose>
+		    <when test="induClass != null and induClass == 3">  
+				LEFT JOIN institution.t_bond_inst_com_indu d ON t.issuer_id = d.com_uni_code AND t.org_id=d.inst_id
+            </when>
+            <otherwise>
+            	LEFT JOIN dmdb.t_bond_com_ext d ON t.issuer_id = d.com_uni_code
+            </otherwise>
+		</choose>
+		LEFT JOIN institution.t_bond_inst_code a ON t.instinvadv_id=a.id
+		LEFT JOIN institution.t_bond_inst_code b ON t.instrating_id=b.id
+		WHERE 1=1
+		AND t.org_id = #{orgId} AND t.bond_uni_code > 0
+		<if test="induId != null">
+			AND d.indu_uni_code = #{induId}
+		</if>
+		<if test="induId != null">
+			<choose>
+		    	<when test="induClass != null and induClass == 3">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<when test="induClass != null and induClass == 1">  
+					AND d.indu_uni_code = #{induId}
+				</when>
+				<otherwise>
+					AND d.indu_uni_code_sw = #{induId}
+				</otherwise>
+			</choose>
+		</if>
+		<if test="ratingId != null">
+			AND t.instrating_id = #{ratingId}
+		</if>
+		<if test="adviceId != null">
+			AND t.instinvadv_id = #{adviceId}
+		</if>
+		<if test="groupId != null">
+			AND t.group_id = #{groupId}
+		</if>
+		<if test="queryKeyws != null">
+			AND (t.bond_code LIKE '%${queryKeyws}%' OR t.bond_shortname LIKE '%${queryKeyws}%')
+		</if>
+		<if test="issuerIds != null">
+			AND t.issuer_id IN
+			<foreach item="item" index="index" collection="issuerIds"
+				open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	
+	<update id="update" parameterType="BondCreditRating">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET GROUP_ID =#{groupId}, USER_ID = #{userId}
+		WHERE BOND_UNI_CODE=#{bondUniCode} AND ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</update>
+	
+	<select id="queryCount" resultType="int" parameterType="BondCreditRating">
+		SELECT COUNT(1) as count FROM <include refid="TABLE_NAME" /> 
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+		<if test="bondUniCode != null">
+			AND	BOND_UNI_CODE=#{bondUniCode} 
+		</if>
+	</select>
+	
+	<select id="queryIssuerCountByOrgid" resultType="java.lang.Integer" parameterType="BondCreditRating">
+		SELECT COUNT(1) id FROM <include refid="TABLE_NAME" /> WHERE ISSUER_ID=#{issuerId} AND BOND_UNI_CODE=#{bondUniCode} AND ORG_ID=#{orgId} 
+	</select>
+	
+	<select id="queryCountByOrgid" resultType="java.lang.Integer" parameterType="BondCreditRating">
+		SELECT COUNT(1) id FROM <include refid="TABLE_NAME" /> WHERE ISSUER_ID=#{issuerId} 
+		<if test="bondUniCode > 0">
+			AND BOND_UNI_CODE=#{bondUniCode} 
+		</if>
+		AND ORG_ID=#{orgId} 
+	</select>
+	<update id="updateGroupIdByOrgid" parameterType="BondCreditRating">
+		UPDATE <include refid="TABLE_NAME" /> 
+		   SET GROUP_ID =#{groupId}, USER_ID = #{userId}, INSTRATING_ID=#{instratingId}
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</update>
+	<insert id="saveCreditRating" parameterType="BondCreditRating">
+		INSERT INTO
+		<include refid="TABLE_NAME" />
+		(GROUP_ID,BOND_UNI_CODE,BOND_CODE,BOND_SHORTNAME,ISSUER_ID,USER_ID,ORG_ID,CREATE_TIME,INSTRATING_ID,INSTINVADV_ID)
+		VALUES
+		(#{groupId},#{bondUniCode},#{bondCode},#{bondShortname},#{issuerId},#{userId},#{orgId},#{createTime},#{instratingId},#{instinvadvId}) 
+	</insert>
+	
+	<insert id="saveOrUpdate" parameterType="BondCreditRating" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		<selectKey keyProperty="id" resultType="Long" order="BEFORE">
+			SELECT COUNT(1) id FROM <include refid="TABLE_NAME" /> WHERE ISSUER_ID=#{issuerId} 
+			<if test="bondUniCode > 0">
+				AND BOND_UNI_CODE=#{bondUniCode} 
+			</if>
+			AND ORG_ID=#{orgId}		 
+		</selectKey>
+		
+		<if test="id > 0">
+		   UPDATE <include refid="TABLE_NAME" /> 
+		   SET GROUP_ID =#{groupId}, USER_ID = #{userId}
+		   WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+		</if>
+		<if test="id == 0">
+			INSERT INTO
+			<include refid="TABLE_NAME" />
+			(GROUP_ID,BOND_UNI_CODE,BOND_CODE,BOND_SHORTNAME,ISSUER_ID,USER_ID,ORG_ID,CREATE_TIME,INSTRATING_ID,INSTINVADV_ID)
+			VALUES
+			(#{groupId},#{bondUniCode},#{bondCode},#{bondShortname},#{issuerId},#{userId},#{orgId},#{createTime},#{instratingId},#{instinvadvId})	 
+		</if>
+	</insert>
+
+	<update id="updateGroup" parameterType="java.util.Map">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET GROUP_ID =#{groupId}, USER_ID = #{userId}
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</update>
+	
+	<update id="updateGroupId" parameterType="java.util.Map">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET GROUP_ID =#{targetGroupId} WHERE GROUP_ID=#{groupId} 
+	</update>
+
+	<update id="updateRatingId" parameterType="java.util.Map">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET instrating_id=#{instratingId}
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</update>
+	
+	<update id="updateAdviceId" parameterType="java.util.Map">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET instinvadv_id=#{instinvadvId}
+		WHERE BOND_UNI_CODE=#{bondUniCode} AND ORG_ID=#{orgId}
+	</update>
+	
+	<select id="querySameIssuerGroup" resultType="java.util.Map">
+		SELECT GROUP_CONCAT(t.group_id) AS groups,t.issuer_id AS issuerId,t.org_id AS orgId 
+			FROM institution.t_bond_credit_rating t 
+		GROUP BY CONCAT(t.org_id,'-',t.issuer_id)
+	</select>
+	<select id="queryIssuerGroup" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId} ORDER BY create_time DESC LIMIT 1
+	</select>
+	<update id="updateIssuerGroup" parameterType="java.util.Map">
+		UPDATE <include refid="TABLE_NAME"/> 
+		SET group_id=#{groupId}
+		WHERE ISSUER_ID=#{issuerId} AND ORG_ID=#{orgId}
+	</update>
+	
+	<select id="queryIssuerGroupInfo" resultMap="baseIssuerGroupInfoMap"
+		parameterType="java.util.Map">
+		SELECT t.issuer_id AS issuerId, t.group_id AS groupId,g.group_name AS groupName, g.group_type AS groupType
+			FROM  institution.t_bond_credit_rating t 
+			LEFT JOIN institution.t_bond_credit_rating_group g ON g.id=t.group_id 
+		WHERE t.issuer_id=#{issuerId} AND t.org_id=#{orgId} ORDER BY t.create_time desc LIMIT 1
+	</select>
+	
+</mapper>

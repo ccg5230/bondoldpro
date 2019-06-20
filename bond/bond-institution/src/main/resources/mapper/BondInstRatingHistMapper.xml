@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondInstRatingHistMapper">
+
+	<sql id='TABLE_NAME'>institution.T_BOND_INST_RATING_HIST</sql>
+
+	<sql id="TABLE_COLUMN">
+		ID,BOND_UNI_CODE,BOND_CHI_NAME,COM_UNI_CODE,COM_CHI_NAME,INST_ID,RATING,RATING_NAME,RATING_DIFF,RATING_DESCRIBE,RATING_TIME,INVESTMENT_ADVICE,INVESTMENT_DESCRIBE,STATUS,CREATE_BY,RATING_BY,CREATE_TIME,INVESTMENT_ADVICE_DESDETAIL
+	</sql>
+
+	<resultMap id="baseResultMap"
+		type="com.innodealing.model.mysql.BondInstRatingHist">
+		<id column="ID" property="id" />
+		<result column="BOND_UNI_CODE" property="bondUniCode" />
+		<result column="BOND_CHI_NAME" property="bondChiName" />
+		<result column="COM_UNI_CODE" property="comUniCode" />
+		<result column="COM_CHI_NAME" property="comChiName" />
+		<result column="INST_ID" property="instId" />
+		<result column="RATING" property="rating" />
+		<result column="RATING_NAME" property="ratingName" />
+		<result column="RATING_DIFF" property="ratingDiff" />
+		<result column="RATING_DESCRIBE" property="ratingDescribe" />
+		<result column="RATING_TIME" property="ratingTime" />
+		<result column="INVESTMENT_ADVICE" property="investmentAdvice" />
+		<result column="INVESTMENT_DESCRIBE" property="investmentDescribe" />
+		<result column="INVESTMENT_ADVICE_DESDETAIL" property="investmentAdviceDesdetail" />
+		<result column="STATUS" property="status" />
+		<result column="CREATE_BY" property="createBy" />
+		<result column="RATING_BY" property="ratingBy" />
+		<result column="CREATE_TIME" property="createTime" />
+	</resultMap>
+
+	<select id="checkRepeatData" resultType="java.lang.Integer" parameterType="BondInstRatingHist" >
+		select count(1) from t_bond_inst_rating_hist 
+		where bond_uni_code=#{bondUniCode} and fat_id = #{fatId} and COM_UNI_CODE=#{comUniCode}
+	
+	</select>
+
+	<insert id="save" parameterType="BondInstRatingHist"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+		<include refid="TABLE_NAME" />
+		(BOND_UNI_CODE,BOND_CHI_NAME,COM_UNI_CODE,COM_CHI_NAME,INST_ID,RATING,RATING_NAME,
+		RATING_DESCRIBE,RATING_DIFF,INVESTMENT_ADVICE,INVESTMENT_DESCRIBE
+		<if test="status!=null and status>0">,STATUS</if>
+		,VERSION
+		<if test="createBy!=null and createBy>0">,CREATE_BY</if>
+		,INVESTMENT_ADVICE_DESDETAIL
+		<if test="oldGroupName!=null">,old_group_name</if>
+		<if test="oldInduName!=null">,old_indu_name</if>
+		<if test="oldRatingByName!=null">,old_rating_by_name</if>
+		<if test="oldRatingTime!=null">,old_rating_time</if>
+		<if test="oldRating!=null and oldRating>0">,old_rating</if>
+		,launch_describe,urgency
+		<if test="oldRelatedNotes!=null">,old_related_notes</if>
+		<if test="oldRatingName!=null">,old_rating_name</if>
+		<if test="oldVersion!=null and oldVersion>0">,old_version</if>
+		<if test="fatId!=null and fatId>0">,fat_id</if>
+		<if test="ratingBy!=null and ratingBy>0">,rating_by,rating_time</if>
+		<if test="type!=null and type>0">,type</if>
+		<if test="groupId!=null">,group_id</if>
+		<if test="useOldRating!=null">,use_old_rating</if>
+		<if test="checkBy!=null">,check_by</if>
+		<if test="checkTime!=null">,check_time</if>
+		<if test="oldInvestmentDescribeTime!=null">,old_investment_describe_time</if>
+		<if test="oldInvestmentDescribe!=null and oldInvestmentDescribe!=''">,old_investment_describe</if>
+		<if test="oldInvestmentDescribeByName!=null and oldInvestmentDescribeByName!=''">,old_investment_describe_by_name</if>
+		)
+		VALUES(#{bondUniCode},#{bondChiName},#{comUniCode},#{comChiName},
+		#{instId},#{rating},#{ratingName},#{ratingDescribe},#{ratingDiff},
+		#{investmentAdvice},#{investmentDescribe}
+		<if test="status!=null and status>0">,#{status}</if>
+		,#{version}
+		<if test="createBy!=null and createBy>0">,#{createBy}</if>
+		,#{investmentAdviceDesdetail}
+		<if test="oldGroupName!=null">,#{oldGroupName}</if>
+		<if test="oldInduName!=null">,#{oldInduName}</if>
+		<if test="oldRatingByName!=null">,#{oldRatingByName}</if>
+		<if test="oldRatingTime!=null">,#{oldRatingTime}</if>
+		<if test="oldRating!=null and oldRating>0">,#{oldRating}</if>
+		,#{launchDescribe}
+		,#{urgency}
+		<if test="oldRelatedNotes!=null">,#{oldRelatedNotes}</if>
+		<if test="oldRatingName!=null">,#{oldRatingName}</if>
+		<if test="oldVersion!=null and oldVersion>0">,#{oldVersion}</if>
+		<if test="fatId!=null and fatId>0">,#{fatId}</if>
+		<if test="ratingBy!=null and ratingBy>0">,#{ratingBy}
+    		<choose>
+		        <when test="ratingTime !=null">
+		           ,#{ratingTime}
+		        </when>
+		        <otherwise>
+		           ,now()
+		        </otherwise>
+    		</choose>
+		</if>
+		<if test="type!=null and type>0">,#{type}</if>
+		<if test="groupId!=null">,#{groupId}</if>
+		<if test="useOldRating!=null">,#{useOldRating}</if>
+		<if test="checkBy!=null">,#{checkBy}</if>
+		<if test="checkTime!=null">,#{checkTime}</if>
+		<if test="oldInvestmentDescribeTime!=null">,#{oldInvestmentDescribeTime}</if>
+		<if test="oldInvestmentDescribe!=null and oldInvestmentDescribe!=''">,#{oldInvestmentDescribe}</if>
+		<if test="oldInvestmentDescribeByName!=null and oldInvestmentDescribeByName!=''">,#{oldInvestmentDescribeByName}</if>
+		)
+	</insert>
+
+	<insert id="saveOrUpdate" parameterType="BondInstRatingHist"
+		useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+		<selectKey keyProperty="id" resultType="Long" order="BEFORE">
+			SELECT COUNT(id) id FROM
+			<include refid="TABLE_NAME" />
+			WHERE STATUS=#{status} AND INST_ID=#{instId} AND
+			COM_UNI_CODE=#{comUniCode}
+			<if test="bondUniCode != null">
+				AND BOND_UNI_CODE=#{bondUniCode}
+			</if>
+			ORDER BY CREATE_TIME DESC LIMIT 1
+		</selectKey>
+		<if test="id > 0">
+			UPDATE
+			<include refid="TABLE_NAME" />
+			SET
+			<if test="rating != null">
+				RATING =#{rating},
+			</if>
+			RATING_TIME=#{ratingTime}
+			WHERE
+			ID=#{id}
+		</if>
+		<if test="id == 0">
+			INSERT INTO
+			<include refid="TABLE_NAME" />
+			(BOND_UNI_CODE,BOND_CHI_NAME,COM_UNI_CODE,COM_CHI_NAME,INST_ID,RATING,RATING_NAME,RATING_DIFF,RATING_TIME,INVESTMENT_ADVICE,INVESTMENT_DESCRIBE,STATUS,VERSION,CREATE_BY,CREATE_TIME,INVESTMENT_ADVICE_DESDETAIL)
+			VALUES(#{bondUniCode},#{bondChiName},#{comUniCode},#{comChiName},#{instId},#{rating},#{ratingName},#{ratingDiff},#{ratingTime},#{investmentAdvice},#{investmentDescribe},#{status},#{version},#{createBy},#{createTime},#{investmentAdviceDesdetail})
+		</if>
+	</insert>
+
+	<select id="queryLastInstRatingHist" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND
+		COM_UNI_CODE=#{comUniCode}
+		<if test="bondUniCode != null">
+			AND BOND_UNI_CODE = #{bondUniCode}
+		</if>
+		AND VERSION=#{version} ORDER BY
+		<if test="status == 3">
+			RATING_TIME DESC
+		</if>
+		<if test="status != 3">
+			CREATE_TIME DESC
+		</if>
+		LIMIT 1
+	</select>
+
+	<select id="queryLastInstRatingHistList" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		t.BOND_UNI_CODE,t.COM_UNI_CODE,t.RATING,t.RATING_NAME,t.RATING_DIFF,t.RATING_TIME,t.INVESTMENT_ADVICE,t.INVESTMENT_DESCRIBE,t.RATING_DESCRIBE,t.INVESTMENT_ADVICE_DESDETAIL
+		FROM(
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND VERSION=#{version}
+		<if test="issuerIds != null">
+			AND COM_UNI_CODE IN
+			<foreach collection="issuerIds" index="index" item="item1"
+				open="(" separator="," close=")">
+				#{item1}
+			</foreach>
+		</if>
+		<if test="bondIds != null">
+			AND BOND_UNI_CODE IN
+			<foreach collection="bondIds" index="index" item="item2"
+				open="(" separator="," close=")">
+				#{item2}
+			</foreach>
+		</if>
+		ORDER BY RATING_TIME DESC ) t GROUP BY
+		<if test="issuerIds != null">
+			t.COM_UNI_CODE
+		</if>
+		<if test="bondIds != null">
+			t.BOND_UNI_CODE
+		</if>
+	</select>
+	
+	<select id="queryLastTwoInstRatingHistByDate" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND VERSION=#{version} 
+		<if test="createDate != null">
+			AND DATE_FORMAT(RATING_TIME,'%Y-%m-%d')=#{createDate} 
+		</if>
+		<if test="bondUniCode != null">
+			AND BOND_UNI_CODE=#{bondUniCode}
+		</if>
+		<if test="type != null">
+			AND TYPE=#{type}
+		</if>
+		AND COM_UNI_CODE=#{comUniCode}
+		ORDER BY RATING_TIME DESC LIMIT 2
+	</select>
+
+	<select id="queryLastInstRatingHistByRatingAdvice" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND
+		COM_UNI_CODE=#{comUniCode}
+		<if test="ratingId != null">
+			AND RATING=#{ratingId}
+		</if>
+		<if test="bondUniCode != null">
+			AND BOND_UNI_CODE = #{bondUniCode}
+		</if>
+		<if test="adviceId != null">
+			AND INVESTMENT_ADVICE = #{adviceId}
+		</if>
+		AND VERSION=#{version} ORDER BY RATING_TIME DESC LIMIT 1
+	</select>
+
+	<select id="queryInstRatingHistByRatingAdvice" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM (SELECT t.* FROM
+		<include refid="TABLE_NAME" />
+		t WHERE t.VERSION=#{version} AND t.STATUS=#{status} AND
+		t.INST_ID=#{instId}
+		<if test="ratingId != null and ratingId > 0">
+			AND t.RATING=#{ratingId}
+		</if>
+		<if test="adviceId != null and adviceId > 0">
+			AND t.INVESTMENT_ADVICE = #{adviceId}
+		</if>
+		<if test="issuerIds != null">
+			AND t.COM_UNI_CODE IN
+			<foreach item="item1" index="index" collection="issuerIds"
+				open="(" separator="," close=")">
+				#{item1}
+			</foreach>
+		</if>
+		<if test="bondIds != null">
+			AND t.BOND_UNI_CODE IN
+			<foreach item="item2" index="index" collection="bondIds"
+				open="(" separator="," close=")">
+				#{item2}
+			</foreach>
+		</if>
+		ORDER BY t.rating_time DESC) a GROUP BY
+		<choose>
+			<when test="adviceId != null and adviceId > 0">
+				a.BOND_UNI_CODE
+			</when>
+			<otherwise>
+				a.COM_UNI_CODE
+			</otherwise>
+		</choose>
+	</select>
+
+	<select id="findInstRatingHistList" resultType="bondInstRatingHist"
+		parameterType="map">
+		SELECT
+		hist.id,
+		hist.bond_chi_name as bondChiName,
+		hist.bond_uni_code as
+		bondUniCode,
+		hist.com_chi_name as comChiName,
+		hist.com_uni_code as
+		comUniCode,
+		hist.inst_id as instId,
+		hist.investment_advice as
+		investmentAdvice,
+		hist.investment_describe as investmentDescribe,
+		hist.launch_describe as launchDescribe,
+		hist.rating as rating,
+		hist.rating_describe as ratingDescribe,
+		hist.rating_time as ratingTime,
+		hist.status as status,
+		hist.rating_name
+		as ratingName,
+		hist.rating_diff
+		as
+		ratingDiff,
+		CONCAT(hist.rating,hist.rating_time) AS t,
+		hist.version,
+		hist.rating,
+		hist.old_rating_name as oldRatingName,
+		hist.old_version as
+		oldVersion,
+		hist.investment_advice_desdetail as investmentAdviceDesdetail,
+		hist.type,
+		hist.group_id as groupId
+		FROM
+		institution.t_bond_inst_rating_hist hist WHERE
+		hist.inst_id = #{instId}
+		and
+		hist.status = 3
+		<if test="type==1">
+			and hist.com_uni_code=#{uniCode}
+		</if>
+		<if test="type==2">
+			and hist.bond_uni_code=#{uniCode}
+			AND hist.investment_advice > 0
+		</if>
+		<if test="requestType==1">
+			and hist.fat_id is null
+		</if>
+		GROUP BY t
+		ORDER BY hist.rating_time DESC
+	</select>
+
+	<select id="queryInstRatingHistAnalysisText" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE VERSION=#{version} AND STATUS=#{status} AND INST_ID=#{instId}
+		<if test="bondId != null">
+			AND BOND_UNI_CODE=#{bondId}
+		</if>
+		<if test="issuerId != null">
+			AND COM_UNI_CODE=#{issuerId}
+		</if>
+		<if test="ratingId != null and ratingId > 0">
+			AND RATING=#{ratingId}
+		</if>
+		<if test="adviceId != null and adviceId > 0">
+			AND INVESTMENT_ADVICE = #{adviceId}
+		</if>
+		ORDER BY RATING_TIME DESC LIMIT 1
+	</select>
+
+	<update id="updateBondInstRatingHist" parameterType="bondInstRatingHist">
+		update institution.t_bond_inst_rating_hist set
+		status = #{status}
+		<if test="launchDescribe!=null and launchDescribe!=''">,launch_describe = #{launchDescribe}</if>
+		<if test="rating!=null">,rating = #{rating}</if>
+		<if test="ratingName!=null and ratingName!=''">,rating_name=#{ratingName}</if>
+		<if test="ratingDescribe!=null and ratingDescribe!=''">,rating_describe=#{ratingDescribe}</if>
+		<if test="ratingDiff!=null">,rating_diff=#{ratingDiff}</if>
+		<if test="investmentAdvice!=null">,investment_advice=#{investmentAdvice}</if>
+		<if test="investmentDescribe!=null and investmentDescribe!=''">,investment_describe=#{investmentDescribe}</if>
+		<if test="investmentAdviceDesdetail!=null and investmentAdviceDesdetail!=''">,investment_advice_desdetail=#{investmentAdviceDesdetail}</if>
+		<if test="checkBy!=null">,check_by=#{checkBy},check_time = now()</if>
+		<if test="checkResult!=null">,check_result=#{checkResult}</if>
+		<if test="groupLeaderBy!=null">,group_leader_by=#{groupLeaderBy}</if>
+		<if test="ratingBy!=null">,rating_by=#{ratingBy},rating_time = now()</if>
+		<if test="groupLeaderDescribe!=null">,group_leader_describe=#{groupLeaderDescribe},group_leader_date=now()
+		</if>
+		<if test="returnReason!=null and returnReason!=''">,return_reason=#{returnReason}</if>
+		<if test="fatId!=null">,fat_id=#{fatId}</if>
+		<if test="oldGroupName!=null and oldGroupName!=''">,old_group_name=#{oldGroupName}</if>
+		<if test="oldInduName!=null and oldInduName!=''">,old_indu_name=#{oldInduName}</if>
+		<if test="oldRatingByName!=null and oldRatingByName!=''">,old_rating_by_name=#{oldRatingByName}</if>
+		<if test="oldRatingTime!=null">,old_rating_time=#{oldRatingTime}</if>
+		<if test="oldRating!=null">,old_rating=#{oldRating}</if>
+		<if test="oldVersion!=null">,old_version=#{oldVersion}</if>
+		<if test="oldRatingName!=null and oldRatingName!=''">,old_rating_name=#{oldRatingName}</if>
+		<if test="oldInvestmentDescribe!=null and oldInvestmentDescribe!=''">,old_investment_describe=#{oldInvestmentDescribe}</if>
+		<if test="oldRelatedNotes!=null and oldRelatedNotes!=''">,old_related_notes=#{oldRelatedNotes}</if>
+		<if test="version!=null">,version=#{version}</if>
+		<if test="type!=null">,type=#{type}</if>
+		<if test="groupId!=null">,group_id=#{groupId}</if>
+		<if test="useOldRating!=null">,use_old_rating=#{useOldRating}</if>
+		<if test="oldInvestmentDescribeTime!=null">,old_investment_describe_time=#{oldInvestmentDescribeTime}</if>
+		<if test="oldInvestmentDescribeByName!=null">,old_investment_describe_by_name=#{oldInvestmentDescribeByName}</if>
+		where id = #{id} and inst_id = #{instId}
+	</update>
+
+	<select id="findInstRatingHistAll" resultType="bondInstRatingHist"
+		parameterType="map">
+		SELECT
+		hist.id,
+		hist.bond_chi_name as bondChiName,
+		hist.bond_uni_code as
+		bondUniCode,
+		hist.com_chi_name as comChiName,
+		hist.com_uni_code as
+		comUniCode,
+		hist.inst_id as instId,
+		hist.investment_advice as
+		investmentAdvice,
+		hist.investment_describe as investmentDescribe,
+		hist.launch_describe as launchDescribe,
+		hist.rating as rating,
+		hist.rating_describe as ratingDescribe,
+		hist.rating_time as ratingTime,
+		hist.rating_by as ratingBy,
+		hist.status as status,
+		hist.rating_name
+		as
+		ratingName,
+		hist.rating_diff as
+		ratingDiff,
+		hist.check_by as checkBy,
+		hist.check_time as checkTime,
+		hist.group_leader_by as groupLeaderBy,
+		hist.group_leader_describe as groupLeaderDescribe,
+		hist.group_leader_date as groupLeaderDate,
+		hist.use_old_rating as
+		useOldRating,
+		hist.fat_id as fatId,
+		hist.return_reason as returnReason,
+		hist.create_time as createTime,
+		hist.create_by as createBy,
+		(SELECT ratingGroup.id FROM institution.t_bond_credit_rating rating LEFT JOIN
+		institution.t_bond_credit_rating_group ratingGroup ON rating.group_id
+		= ratingGroup.id  WHERE hist.com_uni_code =
+		rating.issuer_id AND hist.inst_id = rating.org_id  GROUP BY ratingGroup.id) AS groupId,
+		<if test="induClass==1 or induClass==2 or induClass==3">
+		custIndu.indu_uni_name as
+		induUniName,
+		</if>
+		hist.version,
+		hist.rating,
+		hist.old_rating_name as
+		oldRatingName,
+		hist.old_version as oldVersion,
+		hist.check_result as
+		checkResult,
+		hist.urgency,
+		hist.investment_advice_desdetail as investmentAdviceDesdetail,
+		hist.type,
+		hist.old_investment_describe_time as oldInvestmentDescribeTime
+		FROM
+		institution.t_bond_inst_rating_hist hist
+		<if test="induClass==1">
+			LEFT JOIN (select com_uni_code,indu_uni_code,indu_uni_name
+			from dmdb.t_bond_com_ext ) custIndu
+			ON custIndu.com_uni_code =
+			hist.com_uni_code
+		</if>
+		<if test="induClass==2">
+			LEFT JOIN (SELECT com_uni_code,indu_uni_code_sw
+			indu_uni_code,indu_uni_name_sw indu_uni_name FROM dmdb.t_bond_com_ext
+			) custIndu
+			ON custIndu.com_uni_code = hist.com_uni_code
+		</if>
+		<if test="induClass==3">
+			left join (select
+			com_uni_code,indu_uni_code,indu_uni_name,inst_id from
+			t_bond_inst_com_indu) custIndu
+			ON custIndu.com_uni_code =
+			hist.com_uni_code and custIndu.inst_id =
+			hist.inst_id
+		</if>
+		WHERE
+		hist.inst_id =
+		#{instId}
+		<if test="requestType==1">
+			and hist.fat_id is null
+		</if>
+		<if test="status==1 or status==2 or status==3">
+			and hist.status = #{status}
+		</if>
+		<if test="status==4">
+			and hist.status in (1,2)
+		</if>
+		<if test="userid!=null and typeAll==1">
+			and hist.create_by = #{userid}
+		</if>
+		<if test="userid!=null and typeAll==2">
+			and hist.rating_by = #{userid}
+		</if>
+		<if test="userid!=null and typeAll==3">
+			and hist.check_by = #{userid}
+		</if>
+		<if test="type==1">
+			and hist.com_uni_code=#{uniCode}
+		</if>
+		<if test="type==2">
+			and hist.bond_uni_code=#{uniCode}
+			AND
+			hist.investment_advice IS NOT NULL
+		</if>
+		ORDER BY
+		<if test="status==1">
+			hist.create_time DESC
+		</if>
+		<if test="status==2">
+			hist.rating_time DESC
+		</if>
+		<if test="status==3">
+			hist.check_time DESC
+		</if>
+		<if test="status==4">
+			hist.create_time DESC,hist.rating_time DESC
+		</if>
+	</select>
+
+	<select id="findInstRatingHistStatus" resultType="bondInstRatingHist"
+		parameterType="map">
+		SELECT hist.status,hist.id FROM institution.t_bond_inst_rating_hist
+		hist
+		where
+		hist.inst_id = #{instId}
+		<if test="type==1">
+			and hist.com_uni_code=#{uniCode} and hist.bond_uni_code is
+			null
+		</if>
+		<if test="type==2">
+			and hist.bond_uni_code=#{uniCode}
+		</if>
+		ORDER BY hist.create_time DESC
+		LIMIT 1
+	</select>
+
+	<delete id="deleteInstRatingHistById" parameterType="map">
+		delete from
+		institution.t_bond_inst_rating_hist where inst_id =
+		#{instId}
+		and id =
+		#{id}
+		and rating_time is null
+	</delete>
+
+	<select id="findInstRatingHistStatusCount" resultType="map"
+		parameterType="map">
+		SELECT
+		COUNT(1) as count,STATUS as status
+		FROM
+		institution.t_bond_inst_rating_hist hist WHERE
+		hist.inst_id =
+		#{instId}
+		GROUP BY STATUS
+	</select>
+
+	<select id="findInstRatingHistById" resultType="bondInstRatingHist"
+		parameterType="map">
+		SELECT
+		hist.id,
+		hist.bond_chi_name as bondChiName,
+		hist.bond_uni_code as
+		bondUniCode,
+		hist.com_chi_name as comChiName,
+		hist.com_uni_code as
+		comUniCode,
+		hist.inst_id as instId,
+		hist.investment_advice as investmentAdvice,
+		hist.investment_describe as investmentDescribe,
+		hist.launch_describe as launchDescribe,
+		hist.rating
+		as rating,
+		hist.rating_describe as ratingDescribe,
+		hist.rating_time as
+		ratingTime,
+		hist.rating_by as ratingBy,
+		hist.status as status,
+		hist.rating_name
+		as
+		ratingName,
+		hist.rating_diff as
+		ratingDiff,
+		hist.check_by as checkBy,
+		hist.check_time as checkTime,
+		hist.group_leader_by as groupLeaderBy,
+		hist.group_leader_describe as
+		groupLeaderDescribe,
+		hist.group_leader_date as groupLeaderDate,
+		hist.use_old_rating as
+		useOldRating,
+		hist.fat_id as fatId,
+		hist.return_reason as returnReason,
+		hist.create_time as createTime,
+		hist.create_by as createBy,
+		hist.old_group_name as oldGroupName,
+		hist.old_indu_name as oldInduName,
+		hist.old_rating_by_name as
+		oldRatingByName,
+		hist.old_rating_time as oldRatingTime,
+		hist.old_rating
+		as oldRating,
+		hist.old_investment_describe as
+		oldInvestmentDescribe,
+		hist.version,
+		hist.rating,
+		hist.old_rating_name as
+		oldRatingName,
+		hist.old_version as oldVersion,
+		hist.check_result as
+		checkResult,
+		hist.urgency,
+		hist.investment_advice_desdetail as investmentAdviceDesdetail,
+		hist.type,
+		hist.group_id as groupId,
+		(SELECT ratingGroup.group_name FROM institution.t_bond_credit_rating rating LEFT JOIN
+		institution.t_bond_credit_rating_group ratingGroup ON rating.group_id
+		= ratingGroup.id  WHERE hist.com_uni_code =
+		rating.issuer_id AND hist.inst_id = rating.org_id GROUP BY ratingGroup.group_name) AS groupName
+		,hist.old_investment_describe_time as oldInvestmentDescribeTime,
+		hist.old_investment_describe_by_name as oldInvestmentDescribeByName
+		FROM
+		institution.t_bond_inst_rating_hist hist
+		WHERE
+		hist.id =
+		#{id}
+	</select>
+
+
+	<select id="findBondInstRatingHist" resultType="bondInstRatingHist"
+		parameterType="map">
+		SELECT
+		hist.id,
+		hist.bond_chi_name as bondChiName,
+		hist.bond_uni_code as
+		bondUniCode,
+		hist.com_chi_name as comChiName,
+		hist.com_uni_code as
+		comUniCode,
+		hist.inst_id as instId,
+		hist.investment_advice as
+		investmentAdvice,
+		hist.investment_describe as investmentDescribe,
+		hist.launch_describe as launchDescribe,
+		hist.rating as rating,
+		hist.rating_describe as ratingDescribe,
+		hist.rating_time as ratingTime,
+		hist.rating_by as ratingBy,
+		hist.status as status,
+		hist.rating_name
+		as
+		ratingName,
+		hist.rating_diff as
+		ratingDiff,
+		hist.check_by as checkBy,
+		hist.check_time as checkTime,
+		hist.group_leader_by as groupLeaderBy,
+		hist.group_leader_describe as groupLeaderDescribe,
+		hist.group_leader_date as groupLeaderDate,
+		hist.use_old_rating as
+		useOldRating,
+		hist.fat_id as fatId,
+		hist.return_reason as returnReason,
+		hist.create_time as createTime,
+		hist.create_by as createBy,
+		(SELECT ratingGroup.group_name FROM institution.t_bond_credit_rating rating LEFT JOIN
+		institution.t_bond_credit_rating_group ratingGroup ON rating.group_id
+		= ratingGroup.id  WHERE hist.com_uni_code =
+		rating.issuer_id AND hist.inst_id = rating.org_id GROUP BY ratingGroup.group_name) AS groupName,
+		custIndu.indu_uni_code as
+		induUniCode,
+		custIndu.indu_uni_name as induUniName,
+		hist.urgency,
+		hist.version,
+		hist.rating,
+		hist.old_rating_name as oldRatingName,
+		hist.old_version as oldVersion,
+		hist.check_result as checkResult,
+		hist.investment_advice_desdetail as investmentAdviceDesdetail,
+		hist.type,
+		hist.group_id as groupId
+		,hist.old_investment_describe_time as oldInvestmentDescribeTime
+		FROM
+		institution.t_bond_inst_rating_hist hist
+		<if test="induClass==1">
+			LEFT JOIN (select com_uni_code,indu_uni_code,indu_uni_name
+			from dmdb.t_bond_com_ext ) custIndu
+			ON custIndu.com_uni_code =
+			hist.com_uni_code
+		</if>
+		<if test="induClass==2">
+			LEFT JOIN (SELECT com_uni_code,indu_uni_code_sw
+			indu_uni_code,indu_uni_name_sw indu_uni_name FROM dmdb.t_bond_com_ext
+			) custIndu
+			ON custIndu.com_uni_code = hist.com_uni_code
+		</if>
+		<if test="induClass==3">
+			left join (select
+			com_uni_code,indu_uni_code,indu_uni_name,inst_id from
+			t_bond_inst_com_indu) custIndu
+			ON custIndu.com_uni_code =
+			hist.com_uni_code and custIndu.inst_id =
+			hist.inst_id
+		</if>
+		WHERE
+		hist.inst_id =
+		#{instId}
+		<if test="type==1">
+			and hist.com_uni_code=#{uniCode}
+		</if>
+		<if test="type==2">
+			and hist.bond_uni_code=#{uniCode}
+		</if>
+		ORDER BY hist.create_time DESC
+		limit 1
+	</select>
+
+	<update id="updateBondInstRatingHistByFatId" parameterType="bondInstRatingHist">
+		update institution.t_bond_inst_rating_hist set status =
+		#{status},check_by = #{checkBy},check_time = now(),check_result =
+		#{checkResult}
+		,return_reason = #{returnReason} where fat_id = #{id}
+		and inst_id = #{instId}
+	</update>
+
+	<update id="updateLastRatingHistInvAdvByDate" parameterType="bondInstRatingHist">
+		UPDATE <include refid="TABLE_NAME" /> SET
+			RATING_TIME=#{ratingTime},
+			RATING=#{rating},
+			RATING_NAME=#{ratingName},
+			RATING_DESCRIBE=#{ratingDescribe},
+			RATING_BY=#{ratingBy},
+			RATING_DIFF=#{ratingDiff},
+			OLD_RATING=#{oldRating},
+			OLD_RATING_NAME=#{oldRatingName},
+			OLD_RATING_BY_NAME=#{oldRatingByName},
+			OLD_RATING_TIME=#{oldRatingTime},
+			<if test="oldInvestmentDescribe!=null">
+				OLD_INVESTMENT_DESCRIBE=#{oldInvestmentDescribe},
+			</if>
+			<if test="oldInvestmentDescribeTime!=null">
+				OLD_INVESTMENT_DESCRIBE_TIME=#{oldInvestmentDescribeTime},
+			</if>
+			<if test="oldInvestmentDescribeByName!=null">
+				OLD_INVESTMENT_DESCRIBE_BY_NAME=#{oldInvestmentDescribeByName},
+			</if>
+			INVESTMENT_ADVICE=#{investmentAdvice},
+			INVESTMENT_DESCRIBE=#{investmentDescribe},
+			INVESTMENT_ADVICE_DESDETAIL=#{investmentAdviceDesdetail}
+		WHERE ID =#{id} AND INST_ID =#{instId}
+	</update>
+	
+	<update id="updateLastRatingHistRatingByDate" parameterType="map">
+		UPDATE <include refid="TABLE_NAME" /> SET 
+			<if test="ratingTime!=null">
+				RATING_TIME=#{ratingTime},
+			</if>
+			RATING=#{rating},
+			RATING_NAME=#{ratingName},
+			RATING_DESCRIBE=#{ratingDescribe},
+			<if test="ratingDiff!=null">
+				RATING_DIFF=#{ratingDiff},
+			</if>
+			RATING_BY=#{ratingBy}
+		WHERE INST_ID =#{instId} AND STATUS=#{status} AND COM_UNI_CODE=#{comUniCode} AND BOND_UNI_CODE=#{bondUniCode} AND DATE_FORMAT(RATING_TIME,'%Y-%m-%d')=#{createDate} AND VERSION=#{version} AND TYPE=1
+	</update>
+
+	<select id="findBondInstRatingHistByFatId" parameterType="map"
+		resultType="bondInstRatingHist">
+		SELECT
+		hist.id,
+		hist.bond_chi_name as bondChiName,
+		hist.bond_uni_code as
+		bondUniCode,
+		hist.com_chi_name as comChiName,
+		hist.com_uni_code as
+		comUniCode,
+		hist.inst_id as instId,
+		hist.investment_advice as
+		investmentAdvice,
+		hist.investment_describe as
+		investmentDescribe,
+		hist.launch_describe as launchDescribe,
+		hist.rating
+		as rating,
+		hist.rating_describe as ratingDescribe,
+		hist.rating_time as
+		ratingTime,
+		hist.rating_by as ratingBy,
+		hist.status as status,
+		hist.rating_name
+		as
+		ratingName,
+		hist.rating_diff as
+		ratingDiff,
+		hist.check_by as checkBy,
+		hist.check_time as checkTime,
+		hist.group_leader_by as groupLeaderBy,
+		hist.group_leader_describe as
+		groupLeaderDescribe,
+		hist.group_leader_date as groupLeaderDate,
+		hist.use_old_rating as
+		useOldRating,
+		hist.fat_id as fatId,
+		hist.return_reason as returnReason,
+		hist.create_time as createTime,
+		hist.create_by as createBy,
+		hist.urgency,
+		hist.version,
+		hist.rating,
+		hist.old_rating_name as oldRatingName,
+		hist.old_version as oldVersion,
+		hist.check_result as checkResult,
+		hist.investment_advice_desdetail as investmentAdviceDesdetail,
+		hist.type,
+		hist.group_id as groupId
+		,hist.old_investment_describe_time as oldInvestmentDescribeTime
+		FROM
+		institution.t_bond_inst_rating_hist hist where fat_id = #{id}
+		and
+		inst_id = #{instId}
+	</select>
+	
+	<select id="queryRatingSortByHistdate" resultType="java.lang.Integer"
+		parameterType="map">
+		SELECT
+			b.sort as ratingsort
+		FROM
+			institution.t_bond_inst_rating_hist t
+		LEFT JOIN institution.t_bond_inst_code b ON b.id = t.rating
+		WHERE
+			t.inst_id =#{instId}
+		AND t.com_uni_code =#{comUniCode}
+		AND t.status =#{status}
+		AND t.version =#{version}
+		AND TO_DAYS(NOW()) - TO_DAYS(t.rating_time) > 0
+		ORDER BY t.rating_time DESC LIMIT 1
+	</select>
+	
+	<select id="queryLastInstRatingHistByType" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND
+		COM_UNI_CODE=#{comUniCode} AND
+		DATE_FORMAT(RATING_TIME,'%Y-%m-%d')=#{createDate}
+		<if test="type != null">
+			 AND TYPE =#{type}
+		</if>
+		<if test="bondUniCode != null">
+			AND BOND_UNI_CODE = #{bondUniCode}
+		</if>
+		AND VERSION=#{version} ORDER BY RATING_TIME DESC LIMIT 1
+	</select>
+	
+	<select id="queryInstRatingHistAfterRatingDate" resultMap="baseResultMap"
+		parameterType="map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=#{status} AND INST_ID=#{instId} AND
+		COM_UNI_CODE=#{comUniCode} AND RATING_TIME <![CDATA[ < ]]>#{ratingTime}
+		<if test="bondUniCode != null">
+			AND BOND_UNI_CODE = #{bondUniCode}
+		</if>
+		AND VERSION=#{version} ORDER BY RATING_TIME DESC LIMIT 1
+	</select>
+</mapper>

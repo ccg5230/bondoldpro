@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.UserOrgInfoMapper">
+
+	<select id="queryOrgIdByUserId" resultType="java.lang.Integer"
+		parameterType="java.lang.Integer" useCache="true">
+		SELECT IFNULL(e.id, 0) AS orgInfoId
+		FROM innodealing.crm_customer a
+		LEFT JOIN innodealing.t_sysuser b ON a.dm_user_id=b.id AND b.status=1
+		LEFT JOIN innodealing.crm_organization_customer c ON a.id=c.customer_id
+		LEFT JOIN innodealing.crm_organization d ON c.org_id=d.id
+		LEFT JOIN innodealing.t_orgainfo e ON d.org_info_id=e.id AND e.status=1
+		WHERE
+		a.status=0 AND a.dm_user_id = #{userId}
+	</select>
+
+</mapper>

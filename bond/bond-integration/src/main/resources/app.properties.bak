@@ -1,0 +1,150 @@
+##spring data source config
+#dm\u0090
+#datasource.primary.URL=jdbc\:mysql\://192.168.8.98\:3306/dmdb?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+#datasource.primary.user=bigqa
+#datasource.primary.password=yangwan
+#datasource.primary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+#datasource.primary.data-source-name=dmdb
+#datasource.primary.URL=jdbc\:mysql\://rdse12b8orxontj8886wo.mysql.rds.aliyuncs.com\:3306/dmdb?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+#datasource.primary.user=sysmanage
+#datasource.primary.password=Ll9jKaA2
+#datasource.primary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+#datasource.primary.data-source-name=dmdb
+datasource.primary.URL=jdbc\:mysql\://192.168.8.190\:3306/dmdb?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+datasource.primary.user=innodealing
+datasource.primary.password=innodealing
+datasource.primary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+datasource.primary.data-source-name=dmdb
+
+##innodealing\u0090
+#datasource.secondary.URL=jdbc\:mysql\://192.168.8.98\:3306/innodealing?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+#datasource.secondary.user=bigqa
+#datasource.secondary.password=yangwan
+#datasource.secondary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+#datasource.secondary.data-source-name=innodealing
+#datasource.secondary.URL=jdbc\:mysql\://rdse12b8orxontj8886wo.mysql.rds.aliyuncs.com\:3306/innodealing?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+#datasource.secondary.user=sysmanage
+#datasource.secondary.password=Ll9jKaA2
+#datasource.secondary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+#datasource.secondary.data-source-name=innodealing
+##innodealing
+datasource.secondary.URL=jdbc\:mysql\://192.168.8.190\:3306/innodealing?useUnicode\=true&characterEncoding\=UTF-8&zeroDateTimeBehavior\=convertToNull
+datasource.secondary.user=innodealing
+datasource.secondary.password=innodealing
+datasource.secondary.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+datasource.secondary.data-source-name=innodealing
+
+datasource.asbrs_p.URL=jdbc:mysql://116.62.30.6:3306/innodealing?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull
+datasource.asbrs_p.user=dm
+datasource.asbrs_p.password=dm7891AM
+datasource.asbrs_p.xa-data-source-class-name=com.mysql.jdbc.jdbc2.optional.MysqlXADataSource
+datasource.asbrs_p.data-source-name=asbrs
+# Specify the DBMS
+spring.jpa.database = MYSQL
+# Show or not log for each sql query
+spring.jpa.show-sql = true
+# Hibernate ddl auto (create, create-drop, update)
+#spring.jpa.hibernate.ddl-auto = update
+# Naming strategy
+spring.jpa.hibernate.naming-strategy = org.hibernate.cfg.ImprovedNamingStrategy
+# stripped before adding them to the entity manager)
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.MySQL5Dialect
+
+# Number of ms to wait before throwing an exception if no connection is available.
+#spring.datasource.max-wait=10
+# Maximum number of active connections that can be allocated from this pool at the same time.
+#spring.datasource.max-active=50
+# Validate the connection before borrowing it from the pool.
+#spring.datasource.test-on-borrow=false
+#
+spring.datasource.initialSize=10
+spring.datasource.minIdle=5
+spring.datasource.maxActive=150
+#
+spring.datasource.maxWait=60000
+#
+spring.datasource.timeBetweenEvictionRunsMillis=6000
+spring.datasource.maximum-pool-size=200
+spring.datasource.minEvictableIdleTimeMillis=3000
+spring.datasource.validationQuery=SELECT 1
+spring.datasource.testWhileIdle=true
+spring.datasource.testOnBorrow=false
+spring.datasource.testOnReturn=false
+
+# JTA atomikos config
+spring.jta.enabled=true 
+spring.jta.log-dir=/home/logs/bond-integration/
+spring.jta.log-part1-filename=bond-integration-atomikos.log
+spring.jta.atomikos.datasource.test-query=select 1
+spring.jta.atomikos.datasource.max-pool-size=300
+spring.jta.atomikos.datasource.min-pool-size=50 
+spring.jta.atomikos.properties.serial-jta-transactions=true
+spring.jta.atomikos.connectionfactory.ignore-session-transacted-flag=false
+spring.jta.atomikos.connectionfactory.local-transaction-mode=true
+
+#AMQP
+#rabbitmq
+spring.rabbitmq.host=192.168.8.190
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+#spring.rabbitmq.virtual-host=/
+
+# REDIS (RedisProperties)
+spring.redis.database=8
+spring.redis.host=192.168.8.221
+#spring.redis.password=
+spring.redis.port=6379 
+spring.redis.pool.max-idle=50 
+spring.redis.pool.min-idle=5
+spring.redis.pool.max-active=20
+spring.redis.pool.max-wait=1000
+spring.redis.timeout=100
+# name of Redis server
+#spring.redis.sentinel.master= 
+#spring.redis.sentinel.nodes=
+
+
+#MongoDB
+spring.data.mongodb.bond.database=dm_bond
+spring.data.mongodb.bond.uri=mongodb://root:mongoadmin@192.168.8.180:27017,192.168.8.181:27017/admin?replicaSet=qa_mongodb
+spring.data.mongodb.sentiment.database=dm_bond
+spring.data.mongodb.sentiment.uri=mongodb://root:innodealing_2017@10.0.14.100:27017/admin
+
+
+#web servlet config
+server.port=28080
+server.tomcat.max-threads=1000
+server.contextPath=/bond-integration
+
+#logging
+logging.config= classpath:logback.xml
+
+#config.define.pythonUrl = ${BOND_PYTHON_URL}
+config.define.pythonUrl = http://rest.qa.innodealing.com/normalize
+
+#config.define.guidepriceUrl
+config.define.guidepriceUrl=http://192.168.14.153:20080/api/guideprice/dailydata
+
+#config.define.xmppHost = ${BOND_XMPP_HOST}
+config.define.xmppHost = innodealing-qa
+
+#bond guideprice url
+permission.code.bond.free=bond_basic
+permission.code.bond.pay=bond_subscription
+permission.code.bond.report=report_basic
+permission.code.bond.finareport=report_finance
+
+#config metaservice url
+config.define.metaservice.accountUrl=https://rest.qa.innodealing.com/meta-service/account/dm/id
+config.define.metaservice.permissionsUrl=https://rest.qa.innodealing.com/meta-service/user/id/crmId/permissions
+#email
+spring.mail.host=smtp.innodealing.com
+spring.mail.username=no-reply@innodealing.com
+spring.mail.password=266b0b
+spring.mail.port=25
+#config bondweb url
+config.define.bondweb.noFinanceRptUrl=123
+#config bondsentiment url
+config.define.bondsentiment.sentimentDetailUrl=https://r.qa.innodealing.com/bond-sentiment/newsWarning/getSentimentDetail
+config.define.BondCreditRatingGroup.queryUrl = http://192.168.10.57:8001/bond-institution/

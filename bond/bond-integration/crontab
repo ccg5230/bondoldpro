@@ -1,0 +1,113 @@
+#!/bin/bash
+
+# Lines below here are managed by bond-integration, do not edit
+BOND_I_POST=/home/bond-integration/scripts/bond_sync_http_post.sh
+BOND_I_GET=/home/bond-integration/scripts/bond_sync_http_get.sh
+BOND_I_LOG_HOME=/home/logs/bond-integration/schedule
+BOND_API_HOST=rest.innodealing.com
+BOND_API_LOCAL_HOST=127.0.0.1:19088
+POST=/home/bond-integration/scripts/bond_http_post.sh
+GET=/home/bond-integration/scripts/bond_http_get.sh
+
+# http_proxy=""
+
+# reset redis cache
+0 0 * * * . /etc/profile.d/deployenv.sh; /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT KEYS "deal_cnt_*" | xargs /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT DEL > ${BOND_I_LOG_HOME}/redis-reset.log 2>&1
+### 1 0 * * * . /etc/profile.d/deployenv.sh; /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT KEYS "Last_*" | xargs /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT DEL > ${BOND_I_LOG_HOME}/redis-reset-lastdeal.log 2>&1
+2 0 * * * . /etc/profile.d/deployenv.sh; /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT KEYS "pd_*" | xargs /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT DEL > ${BOND_I_LOG_HOME}/redis-reset-pd.log 2>&1
+
+# auto restart bond-integration 
+0 0  * * * /sbin/service bond-integration restart
+
+# mongodb 
+3 0 * * * /usr/bin/mongo --host mgset-1141069/dds-bp11a3087e79a0341.mongodb.rds.aliyuncs.com:3717,dds-bp11a3087e79a0342.mongodb.rds.aliyuncs.com:3717 --authenticationDatabase admin -u root -pInnodealing_2016 < /home/bond-integration/scripts/mongodb_overnight.js 
+# remove useless comparison data
+4 0 * * * /usr/bin/mongo --host mgset-1141069/dds-bp11a3087e79a0341.mongodb.rds.aliyuncs.com:3717,dds-bp11a3087e79a0342.mongodb.rds.aliyuncs.com:3717 --authenticationDatabase dm_bond -u root -pInnodealing_2016  --eval="var sendTimeParam=\"`date -d "1 months ago" '+%Y-%m-%d'`\""  /home/bond-integration/scripts/gc_bond_single_comparison.js
+
+# company and bonds 
+5 1 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/coms/integrations/all" > ${BOND_I_LOG_HOME}/coms.log 2>&1
+20 1 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/coms/integrations/pdrank" > ${BOND_I_LOG_HOME}/pdrank.log 2>&1
+ 31,45 1 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/bonds/integrations/rebuild" > ${BOND_I_LOG_HOME}/bond_rebuild.log 2>&1
+ 0 2 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/coms/appurtenant/integrations" > ${BOND_I_LOG_HOME}/appurtenant.log 2>&1
+
+# quotes 
+ */3 2-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/bestQuote" > ${BOND_I_LOG_HOME}/quotes_bestQuote.log 2>&1
+ */10 2-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/bondSingleComparison" > ${BOND_I_LOG_HOME}/quotes_bondSingleComparison.log 2>&1
+# 0 23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/historycurve" > ${BOND_I_LOG_HOME}/quotes_historycurve.log 2>&1
+*/5 3-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/todaycurve" > ${BOND_I_LOG_HOME}/quotes_todaycurve.log 2>&1
+0 4 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/workingdates" > ${BOND_I_LOG_HOME}/quotes_workingdates.log 2>&1
+
+# deals 
+ */1 3-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/deals/integration" > ${BOND_I_LOG_HOME}/deals.log 2>&1
+
+# yield curve 
+ 30 3-23 * * * ${BOND_I_GET} ${BOND_API_HOST} "/bondPubPa" > ${BOND_I_LOG_HOME}/bondPubPa.log 2>&1
+ #15,35,50 8,9,10,12 * * * ${BOND_I_GET} ${BOND_API_HOST} "/bondYieldCurve" > ${BOND_I_LOG_HOME}/bondYieldCurve.log 2>&1
+ */5 8,9,10,11,12 * * * curl -v -X GET --header "Accept: application/json" "http://${BOND_API_HOST}/bond-integration/api/tasks/bondYieldCurve" > ${BOND_I_LOG_HOME}/bondYieldCurve.log 2>&1
+
+# finance information 
+10 2 * * * ${BOND_I_POST} ${BOND_API_HOST} "/finance/indicators" > ${BOND_I_LOG_HOME}/finance_indicators.log 2>&1
+## 0 3 * * * ${BOND_I_POST} ${BOND_API_HOST} "/pdAndRating" > ${BOND_I_LOG_HOME}/pdAndRating.log 2>&1
+
+# sentiment 
+ 0,20,40 3-23 * * * unset http_proxy; ${BOND_I_GET} ${BOND_API_LOCAL_HOST} "/bonds/sentiment?flay=true" > ${BOND_I_LOG_HOME}/sentiment.log 2>&1
+ 5,25,45 3-23 * * * unset http_proxy; ${BOND_I_GET} ${BOND_API_LOCAL_HOST} "/bonds/sentimentNews?flay=true" > ${BOND_I_LOG_HOME}/sentimentNews.log 2>&1
+ 10,30,50 3-23 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/bonds/sentimentDate > ${BOND_I_LOG_HOME}/sentiment_date.log 2>&1
+ */14 3-23 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/bonds/induSens" > ${BOND_I_LOG_HOME}/sentiment_indu_sens.log 2>&1
+
+#dealToday
+5 0 * * * ${BOND_I_POST} ${BOND_API_HOST} "/coms/risk/integrations" > ${BOND_I_LOG_HOME}/coms_risk_integrations.log 2>&1
+#discovery
+5 0,1 * * * ${BOND_I_POST} ${BOND_API_HOST} "/discovery/today/deal/init" > ${BOND_I_LOG_HOME}/discovery_today_deal_init.log 2>&1
+5 0,1 * * * ${BOND_I_POST} ${BOND_API_HOST} "/discovery/today/quote/init" > ${BOND_I_LOG_HOME}/discovery_today_quote_init.log 2>&1
+
+#portfolio notification
+0 6 * * *   unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/maturity" >  ${BOND_I_LOG_HOME}/maturity.log 2>&1
+20 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/bondcredMsg" > ${BOND_I_LOG_HOME}/bondcredMsg.log 2>&1
+22 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/bondcredData" > ${BOND_I_LOG_HOME}/bondcredData.log 2>&1
+30 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/financealertMsg" > ${BOND_I_LOG_HOME}/financealertMsg.log 2>&1
+32 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/financealertData" > ${BOND_I_LOG_HOME}/financealertData.log  2>&1
+40 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/issPdMsg" >  ${BOND_I_LOG_HOME}/issPdMsg.log 2>&1
+42 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/issPdData" > ${BOND_I_LOG_HOME}/issPdData.log 2>&1 
+50 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/isscredMsg" >  ${BOND_I_LOG_HOME}/isscredMsg.log 2>&1
+52 6 * * *  unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/isscredData" > ${BOND_I_LOG_HOME}/isscredData.log 2>&1
+0 21 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/notification/impliedRatingMsg" > ${BOND_I_LOG_HOME}/impliedRatingMsg.log 2>&1
+
+# portfolio email
+40 8 * * * unset http_proxy; ${BOND_I_GET} ${BOND_API_LOCAL_HOST} "/bondNotificationMsg/email/innodealingSecretClearRedisGroupEmails" > ${BOND_I_LOG_HOME}/portfolioEmail.log 2>&1
+
+# portfolio recheck readMsgCache
+5 0 * * * unset http_proxy; ${BOND_I_GET} ${BOND_API_LOCAL_HOST} "/portfolio/msg/readStatus/mongodb/recheck" > ${BOND_I_LOG_HOME}/portfolioMsgCacheRecheck.log 2>&1
+
+# conv ratio
+# 5 9,10,18,20 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/bonds/integrations/convRatio" > ${BOND_I_LOG_HOME}/convRatio.log 2>&1
+03 22 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/bonds/integrations/convRatio" > ${BOND_I_LOG_HOME}/convRatio.log 2>&1
+
+# implied rating
+0 20 * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/trends/imprating/today" > ${BOND_I_LOG_HOME}/imprating.log 2>&1
+
+# duration
+53 20 * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-integration/api/bond/duration/rebuild"  > ${BOND_I_LOG_HOME}/duration.log 2>&1
+
+
+#test
+# */1 * * * * unset http_proxy; ${BOND_I_POST} ${BOND_API_LOCAL_HOST} "/test/api/test" >  ${BOND_I_LOG_HOME}/test_local.log 2>&1
+# */1 * * * * ${BOND_I_POST} ${BOND_API_HOST} "/test/api/test" >  ${BOND_I_LOG_HOME}/test_proxy.log 2>&1
+
+
+# Lines below here are managed by Salt, do not edit
+# SALT_CRON_IDENTIFIER:tomcat_bond
+0 0 * * * /srv/script/logrotate.sh /home/tomcat_bond/logs localhost
+# SALT_CRON_IDENTIFIER:/home/logs/bond-integration
+0 0 * * * /srv/script/logrotate.sh /home/logs/bond-integration bond-integration bond-integration-out start.log
+# SALT_CRON_IDENTIFIER:/home/logs/bond-service
+0 0 * * * /srv/script/logrotate.sh /home/logs/bond-service bond-service bond-service_out
+
+
+
+*/5 * * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-data-engine/api/bond/tasks/amaresun/calculationResult"
+
+*/10 * * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-integration/api/bond/quotes/data/monitor" > ${BOND_I_LOG_HOME}/monitor.log 2>&1
+30 0 * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-integration/api/bond/tasks/bonds/bondImpliedRatingIntegration" > ${BOND_I_LOG_HOME}/bondImpliedRatingIntegration.log 2>&1
+30 1 * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-integration/api/bond/tasks/coms/pdrank/recentpd" > ${BOND_I_LOG_HOME}/recentpd.log 2>&1
+0 23 * * * curl -X POST --header "Content-Type: application/json" --header "Accept: application/json" "http://rest.innodealing.com/bond-integration/api/bond/tasks/trends/imprating/today" > ${BOND_I_LOG_HOME}/today.log 2>&1

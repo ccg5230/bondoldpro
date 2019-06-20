@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Lines below here are managed by bond-integration, do not edit
+BOND_I_POST=/home/bond-integration/scripts/bond_sync_http_post.sh
+BOND_I_GET=/home/bond-integration/scripts/bond_sync_http_get.sh
+BOND_I_LOG_HOME=/home/logs/bond-integration/schedule
+BOND_API_HOST=rest.innodealing.com
+# http_proxy=""
+
+# reset redis cache
+0 0 * * * /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT KEYS "deal_cnt_*" | xargs /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT DEL > ${BOND_I_LOG_HOME}/redis-reset.log 2>&1
+2 0 * * * /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT KEYS "pd_*" | xargs /usr/bin/redis-cli -h $BOND_REDIS_HOST -p $BOND_REDIS_PORT DEL > ${BOND_I_LOG_HOME}/redis-reset-pd.log 2>&1
+
+# mongodb 
+3 0 * * * /usr/bin/mongo --host mgset-1141069/dds-bp11a3087e79a0341.mongodb.rds.aliyuncs.com:3717,dds-bp11a3087e79a0342.mongodb.rds.aliyuncs.com:3717 --authenticationDatabase admin -u root -pInnodealing_2016 < /home/bond-integration/scripts/mongodb_overnight.js 
+
+# company and bonds 
+5 0 * * * ${BOND_I_POST} ${BOND_API_HOST} "/coms/integrations" > ${BOND_I_LOG_HOME}/coms.log 2>&1
+31,42 0 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/integrations/rebuild" > ${BOND_I_LOG_HOME}/bond_rebuild.log 2>&1
+
+# quotes 
+#*/3 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/bestQuote" > ${BOND_I_LOG_HOME}/quotes_bestQuote.log 2>&1
+#*/10 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/bondSingleComparison" > ${BOND_I_LOG_HOME}/quotes_bondSingleComparison.log 2>&1
+#0 23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/historycurve" > ${BOND_I_LOG_HOME}/quotes_historycurve.log 2>&1
+#*/5 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/todaycurve" > ${BOND_I_LOG_HOME}/quotes_todaycurve.log 2>&1
+#0 4 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/quotes/workingdates" > ${BOND_I_LOG_HOME}/quotes_workingdates.log 2>&1
+
+# deals 
+*/1 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/deals/integration" > ${BOND_I_LOG_HOME}/deals.log 2>&1
+
+# yield curve 
+30 1-23 * * * ${BOND_I_GET} ${BOND_API_HOST} "/bondPubPa" > ${BOND_I_LOG_HOME}/bondPubPa.log 2>&1
+# 35 * * * * ${BOND_I_GET} ${BOND_API_HOST} "/bondYieldCurve" > ${BOND_I_LOG_HOME}/bondYieldCurve.log 2>&1
+
+# finance information 
+ 0 2 * * * ${BOND_I_POST} ${BOND_API_HOST} "/finance/indicators" > ${BOND_I_LOG_HOME}/finance_indicators.log 2>&1
+ 0 3 * * * ${BOND_I_POST} ${BOND_API_HOST} "/pdAndRating" > ${BOND_I_LOG_HOME}/pdAndRating.log 2>&1
+
+# sentiment 
+ */12 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/sentiment" > ${BOND_I_LOG_HOME}/sentiment.log 2>&1
+ */13 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/dateSentiment" > ${BOND_I_LOG_HOME}/sentiment_date.log 2>&1
+ */14 1-23 * * * ${BOND_I_POST} ${BOND_API_HOST} "/bonds/induSens" > ${BOND_I_LOG_HOME}/sentiment_indu_sens.log 2>&1
+
+# dealToday
+5 0 * * * ${BOND_I_POST} ${BOND_API_HOST} "/coms/risk/integrations" > ${BOND_I_LOG_HOME}/coms_risk_integrations.log 2>&1
+5 0 * * * ${BOND_I_POST} ${BOND_API_HOST} "/deals/refreshBondDealToday" ${BOND_I_LOG_HOME}/deals_refreshBondDealToday.log 2>&1 
+

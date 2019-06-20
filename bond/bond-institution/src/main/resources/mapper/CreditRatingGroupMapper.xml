@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondCreditRatingGroupMapper">
+
+	<sql id='TABLE_NAME'>institution.T_BOND_CREDIT_RATING_GROUP</sql>
+
+	<sql id="TABLE_COLUMN">
+		ID,GROUP_NAME,GROUP_TYPE,CREATED_BY,ORG_ID,CREATE_TIME,UPDATE_TIME
+	</sql>
+
+	<resultMap id="baseResultMap" type="com.innodealing.model.mysql.BondCreditRatingGroup">
+  		<id column="ID" property="id" />  
+		<result column="GROUP_NAME" property="groupName"/>
+		<result column="GROUP_TYPE" property="groupType" />
+		<result column="CREATED_BY" property="createdBy" />
+		<result column="ORG_ID" property="orgId" />
+		<result column="CREATE_TIME" property="createTime" />
+		<result column="UPDATE_TIME" property="updateTime" />
+	</resultMap>
+
+	<insert id="save" parameterType="BondCreditRatingGroup">
+		INSERT INTO
+		<include refid="TABLE_NAME" />
+		(group_name,group_type,created_by,org_id,create_time,update_time)
+		VALUES
+		(#{groupName},#{groupType},#{createdBy},#{orgId},#{createTime},#{updateTime})
+	</insert>
+	
+	<update id="update" parameterType="BondCreditRatingGroup">
+		UPDATE <include refid="TABLE_NAME" />
+		SET GROUP_NAME=#{groupName},UPDATE_TIME=#{updateTime}
+		WHERE
+		ID = #{id}
+	</update>
+	
+	<delete id="delete" parameterType="java.lang.Long">
+		DELETE FROM <include refid="TABLE_NAME" /> WHERE ID = #{groupId}
+	</delete>
+
+	<select id="queryById" resultMap="baseResultMap" parameterType="java.lang.Long">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE ID=#{groupId}
+    </select>
+
+	<select id="queryByName" resultMap="baseResultMap" parameterType="java.lang.String">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE GROUP_NAME=#{groupName}
+    </select>
+    
+    <select id="queryByNameAndOrgId" resultMap="baseResultMap" parameterType="java.util.Map">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE GROUP_NAME=#{groupName} AND ORG_ID=#{orgId} LIMIT 1
+    </select>
+    
+    <select id="queryDefaultOneByOrgId" resultMap="baseResultMap" parameterType="java.util.Map">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE GROUP_TYPE=#{groupType} AND ORG_ID=#{orgId} LIMIT 1
+    </select>
+    
+    <select id="queryByUserId" resultMap="baseResultMap" parameterType="java.lang.Integer">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE CREATED_BY=#{userId} ORDER BY GROUP_TYPE,CREATE_TIME ASC
+    </select>
+    
+    <select id="queryByOrgId" resultMap="baseResultMap" parameterType="java.lang.Integer">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE ORG_ID=#{orgId} ORDER BY GROUP_TYPE,CREATE_TIME ASC
+    </select>
+    
+    <select id="queryExceptId" resultMap="baseResultMap" parameterType="java.lang.Long">
+        SELECT <include refid="TABLE_COLUMN" /> FROM <include refid="TABLE_NAME" /> WHERE ID != #{groupId} ORDER BY GROUP_TYPE,CREATE_TIME ASC
+    </select>
+
+    <select id="queryByIssuerId" resultMap="baseResultMap" parameterType="java.util.Map">
+		SELECT g.ID,g.GROUP_NAME,g.GROUP_TYPE,g.CREATED_BY,g.ORG_ID,g.CREATE_TIME,g.UPDATE_TIME 
+		FROM institution.t_bond_credit_rating_group g 
+		LEFT JOIN institution.t_bond_credit_rating t ON g.id=t.group_id AND g.org_id=t.org_id 
+		WHERE t.issuer_id=#{issuerId} AND t.org_id=#{orgId} 
+		ORDER BY g.create_time DESC LIMIT 1
+    </select>
+
+</mapper>

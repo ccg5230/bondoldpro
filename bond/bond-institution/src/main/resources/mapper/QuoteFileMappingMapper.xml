@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.QuoteFileMappingMapper">
+
+	<sql id='TABLE_NAME'>dmdb.T_QUOTE_FILEMAPPING</sql>
+
+	<sql id="TABLE_COLUMN">
+		ID,FILE_NAME,FILE_PATH,QUOTEID,UPDATE_TIME
+	</sql>
+
+	<resultMap id="baseResultMap" type="com.innodealing.model.mysql.QuoteFileMapping">
+		<id column="ID" property="id" />
+		<result column="FILE_NAME" property="fileName" />
+		<result column="FILE_PATH" property="filePath" />
+		<result column="QUOTEID" property="quoteid" />
+		<result column="UPDATE_TIME" property="updateTime" />
+	</resultMap>
+
+	<select id="queryByOssKey" resultMap="baseResultMap"
+		parameterType="java.lang.String">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND OSS_KEY=#{ossKey} ORDER BY UPDATE_TIME DESC LIMIT 1
+	</select>
+
+	<insert id="save" parameterType="QuoteFileMapping">
+		INSERT INTO
+		<include refid="TABLE_NAME" />
+		(file_name,file_path,status,update_time,oss_key)
+		VALUES
+		(#{fileName},#{filePath},#{status},#{updateTime},#{ossKey})
+	</insert>
+
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.BondInstCodeMapper">
+
+	<sql id='TABLE_NAME'>institution.T_BOND_INST_CODE</sql>
+
+	<sql id="TABLE_COLUMN">
+		ID,NAME,ORG_ID,SORT,STATUS,TYPE,CREATE_BY
+	</sql>
+
+	<resultMap id="baseResultMap" type="com.innodealing.model.mysql.BondInstCode">
+		<id column="ID" property="id" />
+		<result column="NAME" property="name" />
+		<result column="ORG_ID" property="orgId" />
+		<result column="SORT" property="sort" />
+		<result column="STATUS" property="status" />
+		<result column="TYPE" property="type" />
+		<result column="CREATE_BY" property="createBy" />
+	</resultMap>
+
+	<select id="queryByIdAndTypeAndOrgId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND ID=#{id} AND TYPE= #{type} AND ORG_ID=#{orgId} AND VERSION=#{version}
+	</select>
+
+	<select id="queryByNameAndTypeAndOrgId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND NAME=#{name} AND TYPE= #{type} AND ORG_ID=#{orgId}
+		<if test="version != null">
+			 AND VERSION=#{version}
+		</if> 
+		ORDER BY ID DESC LIMIT 1
+	</select>
+
+	<select id="queryByTypeAndOrgId" resultMap="baseResultMap"
+		parameterType="java.util.Map">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND TYPE= #{type} AND ORG_ID=#{orgId} 
+		<if test="version != null">
+			 AND VERSION=#{version} 
+		</if>
+		ORDER BY sort ASC
+	</select>
+
+	<select id="queryById" resultMap="baseResultMap" parameterType="java.lang.Integer">
+		SELECT
+		<include refid="TABLE_COLUMN" />
+		FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND ID=#{id}
+	</select>
+
+	<select id="queryVersionByOrgId" resultType="java.lang.Integer"
+		parameterType="java.lang.Integer">
+		SELECT VERSION FROM
+		<include refid="TABLE_NAME" />
+		WHERE STATUS=1 AND ORG_ID=#{orgId} LIMIT 1
+	</select>
+
+</mapper>

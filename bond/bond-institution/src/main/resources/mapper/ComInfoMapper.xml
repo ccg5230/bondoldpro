@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.innodealing.mapper.ComInfoMapper">
+
+	<select id="queryComListByInstIndu" resultType="bondInstComIndu"
+		parameterType="map">
+		SELECT com.com_uni_code as comUniCode,com.com_chi_name as
+		comChiName,comindu.indu_uni_code as induUniCode,comindu.indu_uni_name
+		as
+		induUniName,comindu.inst_id AS instId
+		FROM
+		bond_ccxe.d_pub_com_info_2
+		com
+		LEFT
+		JOIN
+		institution.t_bond_inst_com_indu comindu ON
+		com.com_uni_code =
+		comindu.com_uni_code
+		<if test="instId!=null">
+			AND comindu.inst_id = #{instId}
+		</if>
+		WHERE com.isvalid = 1
+		<if test="induUniCode!=null">
+			<if test="type==1">
+				AND comindu.indu_uni_code IN (SELECT indu_uni_code FROM
+				t_bond_inst_indu WHERE fat_uni_code = #{induUniCode})
+			</if>
+			<if test="type==2">
+				AND comindu.indu_uni_code = #{induUniCode}
+			</if>
+		</if>
+		<if test="comChiName!=null and comChiName!=''">
+			and com.com_chi_name like '%' #{comChiName} '%'
+		</if>
+	</select>
+
+	<!-- 未添加行业的发行人列表 -->
+	<select id="queryComNotInduList" resultType="bondInstComIndu"
+		parameterType="map">
+		SELECT
+		com.com_uni_code as
+		comUniCode,com.com_chi_name as
+		comChiName FROM
+		bond_ccxe.d_pub_com_info_2 com
+		WHERE com.isvalid = 1
+		AND NOT EXISTS
+		(SELECT comindu.com_uni_code FROM
+		institution.t_bond_inst_com_indu
+		comindu WHERE comindu.com_uni_code =
+		com.com_uni_code AND
+		inst_id=#{instId})
+		<if test="comChiName!=null and comChiName!=''">
+			and com.com_chi_name like '%' #{comChiName} '%'
+		</if>
+	</select>
+
+	<insert id="insertBondInstComIndu" parameterType="bondInstComIndu">
+		insert into
+		institution.t_bond_inst_com_indu
+		(com_uni_code,com_chi_name,indu_uni_code,indu_uni_name,inst_id,create_by,update_by)
+		values(#{comUniCode},#{comChiName},#{induUniCode},#{induUniName},#{instId},#{createBy},#{updateBy})
+	</insert>
+
+	<update id="updateBondInstComIndu" parameterType="bondInstComIndu">
+		update institution.t_bond_inst_com_indu
+		set indu_uni_code =
+		#{induUniCode},indu_uni_name = #{induUniName}
+		where inst_id = #{instId}
+		<if test="comUniCode==null">
+			and indu_uni_code = #{induUniCode}
+		</if>
+		<if test="comUniCode!=null">
+			and com_uni_code = #{comUniCode}
+		</if>
+	</update>
+
+	<delete id="deleteBondInstComIndu" parameterType="map">
+		delete from
+		institution.t_bond_inst_com_indu where inst_id = #{instId}
+		and indu_uni_code in
+		<foreach collection="induUniCodeList" index="index" item="induUniCode"
+			open="(" separator="," close=")">
+			#{induUniCode}
+		</foreach>
+		OR indu_uni_code IN (
+		SELECT indu_uni_code FROM institution.t_bond_inst_indu WHERE
+		inst_id = #{instId} AND fat_uni_code in 
+		<foreach collection="induUniCodeList" index="index" item="induUniCode"
+			open="(" separator="," close=")">
+			#{induUniCode}
+		</foreach>)
+	</delete>
+	
+	<select id="queryComInduCount" parameterType="bondInstComIndu" resultType="int">
+		SELECT COUNT(1)
+		FROM
+		institution.t_bond_inst_com_indu
+		comindu
+		WHERE comindu.com_uni_code = #{comUniCode}
+		AND comindu.inst_id =  #{instId}
+	</select>
+	
+	<delete id="deleteBondInstComInduByComUniCode" parameterType="map">
+		delete from
+		institution.t_bond_inst_com_indu where inst_id = #{instId}
+		and com_uni_code in
+		<foreach collection="comUniCodeList" index="index" item="comUniCode"
+			open="(" separator="," close=")">
+			#{comUniCode}
+		</foreach>
+	</delete>
+
+</mapper>
